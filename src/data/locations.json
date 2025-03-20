@@ -1,0 +1,21 @@
+[
+    {
+      "id": 1,
+      "city": "Prague",
+      "coordinates": [14.4378, 50.0755],
+      "reflection": "I gained deep insights into cultural collaboration in Prague.",
+      "media": "/images/prague.jpg",
+      "dataPoints": "Hierarchical decision-making prevalent.",
+      "takeaway": "Embrace diverse leadership styles."
+    },
+    {
+      "id": 2,
+      "city": "Innsbruck",
+      "coordinates": [11.4041, 47.2692],
+      "reflection": "Innsbruck taught me the value of consensus-based teamwork.",
+      "media": "/images/innsbruck.jpg",
+      "dataPoints": "Consensus-based strategies foster collaboration.",
+      "takeaway": "Adaptability is key to overcoming challenges."
+    }
+  ]
+  

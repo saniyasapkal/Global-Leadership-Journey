@@ -1,0 +1,31 @@
+[
+    {
+      "id": 1,
+      "name": "Prague – Cultural Awakening",
+      "shortName": "P",
+      "date": "2020-04-15",
+      "summary": "Gained insights on cross-cultural collaboration.",
+      "reflection": "In Prague, I learned the importance of listening and adapting to diverse perspectives.",
+      "media": "/images/prague.jpg",
+      "skillData": {
+        "labels": ["Communication", "Empathy", "Adaptability"],
+        "data": [80, 70, 85]
+      },
+      "takeaway": "Adaptability and empathy drive effective leadership."
+    },
+    {
+      "id": 2,
+      "name": "Innsbruck – Consensus Building",
+      "shortName": "I",
+      "date": "2021-07-22",
+      "summary": "Developed a consensus-based decision-making approach.",
+      "reflection": "In Innsbruck, I embraced a collaborative mindset that balanced diverse opinions.",
+      "media": "/images/innsbruck.jpg",
+      "skillData": {
+        "labels": ["Collaboration", "Decision Making", "Flexibility"],
+        "data": [75, 80, 90]
+      },
+      "takeaway": "Collaboration and flexibility lead to stronger teams."
+    }
+  ]
+  
