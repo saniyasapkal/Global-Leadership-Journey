@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect } from "react";
 
 // Smooth scrolling helper
 const scrollToSection = (id) => {
@@ -12,7 +11,7 @@ const scrollToSection = (id) => {
 };
 
 export default function HeroSection() {
-  // Framer Motion variants for container, text, and buttons
+  // Framer Motion variants for container, text, and button
   const containerVariants = {
     hidden: {},
     visible: {
@@ -32,10 +31,10 @@ export default function HeroSection() {
 
   return (
     <section className="relative w-full h-screen overflow-hidden">
-      {/* Background Video (or swap for an animated world map) */}
+      {/* Background Video */}
       <motion.video
         className="absolute top-0 left-0 w-full h-full object-cover"
-        src="/videos/hero.mp4" // Place your cinematic video in public/videos/hero.mp4
+        src="/videos/dynamic-bg.mp4" // Updated path: ensure the file is at public/videos/dynamic-bg.mp4
         autoPlay
         loop
         muted
@@ -48,11 +47,6 @@ export default function HeroSection() {
           repeatType: "reverse",
         }}
       />
-
-      {/* Optional: Particle Animation or Interactive World Map Overlay */}
-      {/* <div className="absolute inset-0 pointer-events-none">
-        <YourParticleComponent />
-      </div> */}
 
       {/* Dark overlay for readability */}
       <div className="absolute inset-0 bg-black opacity-40"></div>
@@ -71,11 +65,6 @@ export default function HeroSection() {
         >
           From Code to Cultures: My Evolution as a Global Leader
         </motion.h1>
-        {/* Alternatively, you can use:
-        <motion.h1 className="text-white text-3xl md:text-5xl font-bold mb-4" variants={textVariants}>
-          Bridging Leadership & Innovation Across Borders
-        </motion.h1>
-        */}
         {/* Subtitle */}
         <motion.p
           className="text-white text-lg md:text-xl max-w-2xl mb-8"
@@ -84,25 +73,15 @@ export default function HeroSection() {
         >
           How global experiences shaped my leadership, adaptability, and vision.
         </motion.p>
-        {/* CTA Buttons */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <motion.button
-            className="bg-blue-600 text-white py-3 px-6 rounded-full font-semibold focus:outline-none"
-            variants={buttonVariants}
-            whileHover={{ scale: 1.05 }}
-            onClick={() => scrollToSection("interactiveMap")}
-          >
-            Begin My Journey
-          </motion.button>
-          <motion.button
-            className="border border-white text-white py-3 px-6 rounded-full font-semibold focus:outline-none hover:bg-white hover:text-black transition"
-            variants={buttonVariants}
-            whileHover={{ scale: 1.05 }}
-            onClick={() => scrollToSection("leadershipInsights")}
-          >
-            Explore Leadership Insights
-          </motion.button>
-        </div>
+        {/* Single CTA Button */}
+        <motion.button
+          className="bg-blue-600 text-white py-3 px-6 rounded-full font-semibold focus:outline-none"
+          variants={buttonVariants}
+          whileHover={{ scale: 1.05 }}
+          onClick={() => scrollToSection("journey")}
+        >
+          Begin My Journey
+        </motion.button>
       </motion.div>
     </section>
   );

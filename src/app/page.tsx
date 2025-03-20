@@ -1,3 +1,4 @@
+
 // src/app/page.tsx
 
 import HeroSection from "@/components/HeroSection";
@@ -13,13 +14,21 @@ export default function HomePage() {
       {/* Hero Section - Engaging Landing View */}
       <HeroSection />
 
+      {/* Interactive Leadership Journey - Dual View (Map & Timeline) */}
+      <section id="journey" className="w-full max-w-6xl px-6">
+        
+        <Timeline />
+      </section>
 
       {/* Key Leadership Insights */}
       <section id="insights" className="w-full max-w-5xl px-6 my-16">
         <LeadershipInsights />
       </section>
 
-
+      {/* Personal Reflection & Growth */}
+      <section id="reflection" className="w-full max-w-5xl px-6 my-16">
+        <ReflectionSection />
+      </section>
 
     </main>
   );

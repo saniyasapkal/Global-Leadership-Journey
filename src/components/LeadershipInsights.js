@@ -1,8 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import dynamic from "next/dynamic";
+
+// Dynamically import react-leaflet components to prevent SSR issues
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+
 import { Bar } from "react-chartjs-2";
 import Modal from "react-modal";
 import {
@@ -14,63 +29,166 @@ import {
   Tooltip as ChartTooltip,
   Legend,
 } from "chart.js";
-import L from "leaflet";
+
+// Import Leaflet CSS (this is safe because it's just CSS)
 import "leaflet/dist/leaflet.css";
+
 import FourFramesSection from "@/components/FourFramesSection";
 
-// Fix Leaflet default icon paths
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-});
-
-// Register Chart.js components for Bar chart
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  ChartTooltip,
-  Legend
-);
-
-// Set react-modal app element
+// Set react-modal app element (client-side only)
 Modal.setAppElement("body");
 
-// Sample inline data (replace with your actual data or import from JSON)
+// --------------------
+// DATA & CONFIGURATION
+// --------------------
+
+// Country insights data
 const countryInsights = [
   {
     id: "us",
     name: "United States",
-    insight: "Fast decision-making, individualistic, risk-taking",
-    details:
-      "In the U.S., leadership values speed and decisiveness with a strong emphasis on individual initiative and risk-taking.",
-    // Leaflet uses [lat, lng]
+    overview: "Individualist & Achievement-Based",
+    position: "Bottom Corner – High Individualism, Low Hierarchy",
+    leadershipStyle:
+      "Competitive, fast-paced, and results-driven. U.S. leaders encourage individual initiative and autonomy while rewarding performance.",
+    decisionMaking:
+      "Fast, decisive, and leader-driven; prioritizes efficiency over consensus.",
+    communication:
+      "Low-context, highly direct, and goal-focused. Employees are expected to speak up and challenge leadership.",
+    risk: "Very high; promotes innovation, experimentation, and learning from failure.",
+    takeaway: "Speed, adaptability, and confidence drive U.S. leadership.",
     coordinates: [40, -100],
+  },
+  {
+    id: "de",
+    name: "Germany",
+    overview: "Egalitarian & Task-Oriented",
+    position: "Midway between Hierarchy and Consensus",
+    leadershipStyle:
+      "Structured, methodical, and logic-driven. German leaders value precision, expertise, and direct communication.",
+    decisionMaking:
+      "Well-researched and analytical, but encourages constructive debate.",
+    communication:
+      "Very direct and to the point. Feedback is given honestly and without sugarcoating.",
+    risk: "Moderate; focuses on long-term strategic planning over short-term gains.",
+    takeaway: "Precision and expertise define leadership in Germany.",
+    coordinates: [51, 10],
+  },
+  {
+    id: "uk",
+    name: "United Kingdom",
+    overview: "Balanced Between Hierarchical & Individualist",
+    position: "Between Hierarchy & Individualism",
+    leadershipStyle:
+      "Mix of formal structure and entrepreneurial flexibility. Leaders expect initiative but also value tradition.",
+    decisionMaking:
+      "Pragmatic—leaders weigh risks but still value efficiency.",
+    communication:
+      "Moderate directness. British leaders use diplomacy and humor to soften feedback.",
+    risk: "Moderate; leaders encourage innovation but avoid reckless risks.",
+    takeaway:
+      "Strategic adaptability makes UK leadership effective in global business.",
+    coordinates: [55, -3],
   },
   {
     id: "fr",
     name: "France",
-    insight: "Structured hierarchy, authoritative decision-making",
-    details:
-      "French leadership follows formal hierarchies and centralized decision-making, emphasizing control and structure.",
+    overview: "Hierarchical but Intellectual",
+    position: "Leans toward Hierarchy, but values intellectual debate",
+    leadershipStyle:
+      "Strong central authority, but leaders encourage discussion. Hierarchical, yet driven by analytical thinking and debate.",
+    decisionMaking:
+      "Top-down but discussion-heavy. French leadership embraces complexity and strategic thinking.",
+    communication:
+      "Persuasive and articulate. Leaders engage in intellectual debate before making decisions.",
+    risk: "Moderate; risk is calculated but not avoided if innovation is the goal.",
+    takeaway:
+      "Analytical, persuasive, and centralized decision-making.",
     coordinates: [46, 2],
+  },
+  {
+    id: "cn",
+    name: "China",
+    overview: "Hierarchical & Relationship-Oriented",
+    position: "Strongly Hierarchical & Relationship-Driven",
+    leadershipStyle:
+      "Top-down authority with a strong emphasis on relationships (Guanxi).",
+    decisionMaking:
+      "Slow and deliberate; based on long-term strategy rather than short-term results.",
+    communication:
+      "High-context and indirect. Avoids direct confrontation and uses subtle cues.",
+    risk: "Low; prefers stability and long-term gains over short-term disruption.",
+    takeaway:
+      "Patience, hierarchy, and strategic vision define Chinese leadership.",
+    coordinates: [35, 105],
+  },
+  {
+    id: "in",
+    name: "India",
+    overview: "Hierarchical but Flexible",
+    position: "Hierarchical but adaptable",
+    leadershipStyle:
+      "Respect for seniority is critical, but leadership is flexible and relationship-based.",
+    decisionMaking:
+      "Senior leaders have the final say, but discussions are common.",
+    communication:
+      "High-context, indirect, and relationship-focused. Nonverbal cues are important.",
+    risk: "Moderate to high; leaders are entrepreneurial but rely on networks and relationships.",
+    takeaway:
+      "Relationships and flexibility drive leadership success in India.",
+    coordinates: [21, 78],
   },
   {
     id: "jp",
     name: "Japan",
-    insight: "Consensus-driven, indirect communication",
-    details:
-      "Japanese leadership is marked by group consensus and subtle, indirect communication with a strong focus on harmony.",
+    overview: "Consensus & Harmony-Oriented",
+    position: "Consensus-Oriented & Hierarchical",
+    leadershipStyle:
+      "Leaders act as facilitators; group harmony is prioritized over individual command.",
+    decisionMaking:
+      "Consensus-driven (using systems like the Ringi system); decisions take time but are well-executed.",
+    communication:
+      "High-context, indirect, and implicit; subtle cues are key.",
+    risk: "Low; stability and careful planning are emphasized.",
+    takeaway:
+      "Patience, harmony, and structured consensus define Japanese leadership.",
     coordinates: [36, 138],
+  },
+  {
+    id: "br",
+    name: "Brazil",
+    overview: "Relationship & Adaptability-Focused",
+    position: "Balanced between Hierarchical & Flexible Leadership",
+    leadershipStyle:
+      "Charismatic and personal. Leadership is people-driven, focusing on relationships and flexibility.",
+    decisionMaking:
+      "Flexible and relational; trust matters more than process.",
+    communication:
+      "Expressive and indirect. Nonverbal communication is key.",
+    risk: "High; Brazil embraces creative problem-solving and adaptability.",
+    takeaway:
+      "Relationships and personal trust drive leadership success.",
+    coordinates: [-10, -55],
+  },
+  {
+    id: "ae",
+    name: "United Arab Emirates",
+    overview: "Visionary & Hierarchical",
+    position: "Highly Hierarchical & Visionary",
+    leadershipStyle:
+      "Strong authority with a focus on rapid execution and innovation.",
+    decisionMaking:
+      "Top-down, but highly strategic. Visionary leaders take decisive action.",
+    communication:
+      "High-context and formal. Diplomacy is essential.",
+    risk: "High in business, low in traditional sectors. UAE leaders embrace innovation but respect tradition.",
+    takeaway:
+      "Strong leadership, rapid innovation, and structured hierarchy.",
+    coordinates: [24, 54],
   },
 ];
 
+// Bar chart configuration
 const barData = {
   labels: [
     "Cultural Intelligence",
@@ -95,16 +213,12 @@ const barOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: {
-      position: "top",
-    },
-    title: {
-      display: true,
-      text: "Leadership Growth Metrics",
-    },
+    legend: { position: "top" },
+    title: { display: true, text: "Leadership Growth Metrics" },
   },
 };
 
+// Four Frames Leadership Reflection Data
 const leadershipFrames = [
   {
     id: "structural",
@@ -143,37 +257,196 @@ const leadershipFrames = [
   },
 ];
 
-// Simple MilestoneCard for timeline (if needed)
-const MilestoneCard = ({ milestone, onClick }) => {
+// --------------------
+// TIMELINE DATA & COMPONENTS
+// --------------------
+
+// Timeline milestones data
+const timelineData = [
+  {
+    expectation: "A Leader Must Always Have the Answers.",
+    before: "Leaders must always know everything.",
+    after: "Leadership is about asking the right questions.",
+    keyTakeaway:
+      "Leadership isn’t about proving knowledge—it’s about fostering insight and guiding teams toward the best solutions.",
+  },
+  {
+    expectation: "The Best Leaders Make Decisions Quickly and Assertively.",
+    before:
+      "Decisiveness is the hallmark of a great leader—deliberation shows weakness.",
+    after:
+      "Effective leadership balances decisiveness with thoughtful consideration.",
+    keyTakeaway:
+      "Speed isn’t always strength—some cultures prioritize consensus over quick execution, leading to stronger, more sustainable decisions.",
+  },
+  {
+    expectation: "Leadership is About Authority and Directing Others.",
+    before:
+      "Leaders must take charge, delegate tasks, and ensure people follow instructions.",
+    after:
+      "True leadership is about influence, not control—empowering teams creates the best results.",
+    keyTakeaway:
+      "Leaders don’t just direct; they create environments where teams feel ownership and thrive independently.",
+  },
+  {
+    expectation: "Strong Leaders Separate Emotion from Decision-Making.",
+    before:
+      "Being emotional in leadership is a weakness; logic should always come first.",
+    after:
+      "Emotional intelligence builds trust, engagement, and team cohesion.",
+    keyTakeaway:
+      "Leaders who understand emotions make better decisions and inspire loyalty.",
+  },
+  {
+    expectation: "Good Leadership Looks the Same Everywhere.",
+    before:
+      "Leadership principles are universal—what works in one culture works everywhere.",
+    after:
+      "Leadership is deeply cultural—different environments require different approaches.",
+    keyTakeaway:
+      "Great leaders adapt to cultural contexts instead of imposing one model universally.",
+  },
+];
+
+// MilestoneItem component
+const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
   return (
     <motion.div
-      className="relative flex flex-col items-center cursor-pointer"
-      onClick={onClick}
-      whileHover={{ scale: 1.05 }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      className="mb-8 relative pl-8"
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white">
-        {milestone.shortName || milestone.name.charAt(0)}
+      {/* Circular indicator & animated arrow */}
+      <div className="absolute left-0 top-0 flex items-center">
+        <div className="w-4 h-4 bg-white border-2 border-indigo-600 rounded-full animate-pulse" />
+        <motion.div
+          className="ml-2"
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          {/* Simple arrow SVG */}
+          <svg
+            className="w-4 h-4 text-indigo-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10.293 15.707a1 1 0 010-1.414L13.586 11H3a1 1 0 110-2h10.586l-3.293-3.293a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </motion.div>
       </div>
-      <motion.div
-        className="absolute bottom-full mb-2 bg-gray-800 text-white text-xs rounded px-2 py-1 pointer-events-none"
-        initial={{ opacity: 0 }}
-        whileHover={{ opacity: 1 }}
-      >
-        {milestone.name}: {milestone.insight}
-      </motion.div>
+      {/* Milestone content with gradient transition from Before to After */}
+      <div className="bg-gradient-to-r from-gray-100 to-blue-100 rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
+        <div className="flex flex-col md:flex-row justify-between">
+          <div className="md:w-1/2 p-2 hover:scale-105 transition-transform">
+            <h4 className="font-bold text-gray-700">Before</h4>
+            <p className="text-sm text-gray-600">{milestone.before}</p>
+          </div>
+          <div className="md:w-1/2 p-2 hover:scale-105 transition-transform">
+            <h4 className="font-bold text-blue-700">After</h4>
+            <p className="text-sm text-blue-600">{milestone.after}</p>
+          </div>
+        </div>
+        <div className="mt-2">
+          <p className="text-xs text-gray-500">
+            Expectation:{" "}
+            <span className="font-medium">{milestone.expectation}</span>
+          </p>
+        </div>
+        <div className="mt-2">
+          <button
+            onClick={onToggle}
+            className="text-sm text-indigo-600 hover:underline focus:outline-none"
+          >
+            {isExpanded ? "See Less" : "See More"}
+          </button>
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-2 overflow-hidden"
+              >
+                <p className="text-sm text-gray-800">
+                  {milestone.keyTakeaway}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </motion.div>
   );
 };
 
+// VerticalTimeline component with a progress indicator
+const VerticalTimeline = () => {
+  const [expandedIndex, setExpandedIndex] = useState(null);
+  const timelineRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: timelineRef,
+    offset: ["start end", "end start"],
+  });
+  const progressHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+  const handleToggle = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
+
+  return (
+    <div ref={timelineRef} className="relative">
+      {/* Vertical progress bar */}
+      <div className="absolute left-0 top-0 h-full w-2 bg-gray-200">
+        <motion.div
+          className="h-full bg-indigo-600"
+          style={{ height: progressHeight }}
+        />
+      </div>
+      <div className="ml-8">
+        {timelineData.map((milestone, index) => (
+          <MilestoneItem
+            key={index}
+            milestone={milestone}
+            isExpanded={expandedIndex === index}
+            onToggle={() => handleToggle(index)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --------------------
+// MAIN COMPONENT
+// --------------------
 export default function LeadershipInsights() {
   // Map location side panel state
   const [selectedCountry, setSelectedCountry] = useState(null);
-  // State for split-screen hover effect
-  const [isHoveringSplit, setIsHoveringSplit] = useState(false);
-  
+
+  // Use useEffect to run Leaflet-specific code only on the client
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const L = require("leaflet");
+      delete L.Icon.Default.prototype._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl:
+          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+        iconUrl:
+          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+        shadowUrl:
+          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+      });
+    }
+  }, []);
+
   return (
     <section className="py-16 bg-gray-50 relative">
       {/* 1️⃣ Section Header & Introduction */}
@@ -220,7 +493,7 @@ export default function LeadershipInsights() {
         <AnimatePresence>
           {selectedCountry && (
             <motion.div
-              className="w-full md:w-1/3 bg-white shadow-lg p-4 md:ml-4 mt-4 md:mt-0"
+              className="w-full md:w-1/3 bg-white shadow-lg p-4 md:ml-4 mt-4 md:mt-0 relative"
               initial={{ x: 300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 300, opacity: 0 }}
@@ -235,49 +508,43 @@ export default function LeadershipInsights() {
               <h3 className="text-xl font-bold mb-2">
                 {selectedCountry.name} Leadership
               </h3>
-              <p className="mb-4">{selectedCountry.details}</p>
+              <div className="space-y-2">
+                <p>
+                  <strong>Overview:</strong> {selectedCountry.overview}
+                </p>
+                <p>
+                  <strong>Position on the Triangle:</strong>{" "}
+                  {selectedCountry.position}
+                </p>
+                <p>
+                  <strong>Leadership Style:</strong>{" "}
+                  {selectedCountry.leadershipStyle}
+                </p>
+                <p>
+                  <strong>Decision-Making:</strong> {selectedCountry.decisionMaking}
+                </p>
+                <p>
+                  <strong>Communication Style:</strong>{" "}
+                  {selectedCountry.communication}
+                </p>
+                <p>
+                  <strong>Risk-Taking:</strong> {selectedCountry.risk}
+                </p>
+                <p>
+                  <strong>Leadership Takeaway:</strong> {selectedCountry.takeaway}
+                </p>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* 3️⃣ Before vs. After Split-Screen Effect */}
+      {/* 3️⃣ Before vs. After: Leadership Evolution Timeline */}
       <div className="max-w-4xl mx-auto px-4 mb-16">
         <h3 className="text-2xl font-bold mb-4 text-center">
           Before vs. After: Leadership Evolution
         </h3>
-        <div
-          className="relative border rounded overflow-hidden"
-          onMouseEnter={() => setIsHoveringSplit(true)}
-          onMouseLeave={() => setIsHoveringSplit(false)}
-        >
-          <div className="flex">
-            <motion.div
-              className="flex-1"
-              animate={{ width: isHoveringSplit ? "30%" : "50%" }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="p-6">
-                <h4 className="font-bold mb-2">Before</h4>
-                <p className="text-sm text-gray-700">
-                  Leadership was about authority and rigid structures.
-                </p>
-              </div>
-            </motion.div>
-            <motion.div
-              className="flex-1"
-              animate={{ width: isHoveringSplit ? "70%" : "50%" }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="p-6">
-                <h4 className="font-bold mb-2">After</h4>
-                <p className="text-sm text-gray-700">
-                  Leadership evolved into influence, adaptability, and collaboration.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+        <VerticalTimeline />
       </div>
 
       {/* 4️⃣ Leadership Growth Metrics - Radial Progress Indicators */}
@@ -333,13 +600,14 @@ export default function LeadershipInsights() {
   );
 }
 
-// New Component: CircularProgressBar
+// --------------------
+// CircularProgressBar Component
+// --------------------
 const CircularProgressBar = ({ before, after, label }) => {
   const radius = 50;
   const stroke = 10;
   const normalizedRadius = radius - stroke * 2;
   const circumference = normalizedRadius * 2 * Math.PI;
-
   const beforeOffset = circumference - (before / 100) * circumference;
   const afterOffset = circumference - (after / 100) * circumference;
   const improvement = Math.round(((after - before) / before) * 100);
