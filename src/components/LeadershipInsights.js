@@ -1,23 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import dynamic from "next/dynamic";
-
-// Dynamically import react-leaflet components to prevent SSR issues
-const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Marker),
-  { ssr: false }
-);
-
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { Bar } from "react-chartjs-2";
 import Modal from "react-modal";
 import {
@@ -29,13 +14,32 @@ import {
   Tooltip as ChartTooltip,
   Legend,
 } from "chart.js";
-
-// Import Leaflet CSS (this is safe because it's just CSS)
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-
 import FourFramesSection from "@/components/FourFramesSection";
 
-// Set react-modal app element (client-side only)
+// Fix Leaflet default icon paths
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
+
+// Register Chart.js components for Bar chart
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  ChartTooltip,
+  Legend
+);
+
+// Set react-modal app element
 Modal.setAppElement("body");
 
 // --------------------
@@ -213,8 +217,13 @@ const barOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { position: "top" },
-    title: { display: true, text: "Leadership Growth Metrics" },
+    legend: {
+      position: "top",
+    },
+    title: {
+      display: true,
+      text: "Leadership Growth Metrics",
+    },
   },
 };
 
@@ -265,46 +274,38 @@ const leadershipFrames = [
 const timelineData = [
   {
     expectation: "A Leader Must Always Have the Answers.",
-    before: "Leaders must always know everything.",
-    after: "Leadership is about asking the right questions.",
+    before: "I believed a strong leader had to know everything and always have the right solution.",
+    after: "I learned that great leadership is about asking the right questions and leveraging diverse expertise.",
     keyTakeaway:
-      "Leadership isn’t about proving knowledge—it’s about fostering insight and guiding teams toward the best solutions.",
+      "Leadership isn’t about having all the answers—it’s about creating an environment where the best answers emerge through collaboration.",
   },
   {
     expectation: "The Best Leaders Make Decisions Quickly and Assertively.",
-    before:
-      "Decisiveness is the hallmark of a great leader—deliberation shows weakness.",
-    after:
-      "Effective leadership balances decisiveness with thoughtful consideration.",
+    before: "I thought hesitation was a sign of weakness, and decisiveness defined strong leadership.",
+    after: "I realized that effective leadership means knowing when to act fast and when to take time for thoughtful deliberation.",
     keyTakeaway:
-      "Speed isn’t always strength—some cultures prioritize consensus over quick execution, leading to stronger, more sustainable decisions.",
+      "Speed alone doesn’t define leadership—some cultures value consensus over rapid execution, leading to stronger, more sustainable decisions.",
   },
   {
     expectation: "Leadership is About Authority and Directing Others.",
-    before:
-      "Leaders must take charge, delegate tasks, and ensure people follow instructions.",
-    after:
-      "True leadership is about influence, not control—empowering teams creates the best results.",
+    before: "I saw leadership as taking charge, giving instructions, and ensuring efficiency through control.",
+    after: "I discovered that real leadership is about influence, empowerment, and fostering ownership within a team.",
     keyTakeaway:
-      "Leaders don’t just direct; they create environments where teams feel ownership and thrive independently.",
+      "The best leaders don’t just manage—they inspire. True leadership is about enabling others to contribute meaningfully and take initiative.",
   },
   {
     expectation: "Strong Leaders Separate Emotion from Decision-Making.",
-    before:
-      "Being emotional in leadership is a weakness; logic should always come first.",
-    after:
-      "Emotional intelligence builds trust, engagement, and team cohesion.",
+    before: "I assumed that emotional detachment made for better leadership, ensuring logical and rational decisions.",
+    after: "I realized that emotional intelligence is just as critical as strategic thinking in building trust and engagement.",
     keyTakeaway:
-      "Leaders who understand emotions make better decisions and inspire loyalty.",
+      "Leaders who acknowledge emotions—both their own and others'—make better decisions, strengthen relationships, and create more cohesive teams.",
   },
   {
     expectation: "Good Leadership Looks the Same Everywhere.",
-    before:
-      "Leadership principles are universal—what works in one culture works everywhere.",
-    after:
-      "Leadership is deeply cultural—different environments require different approaches.",
+    before: "I believed strong leadership followed universal principles that worked in any environment.",
+    after: "I learned that leadership is shaped by culture—what works in one place may not resonate elsewhere.",
     keyTakeaway:
-      "Great leaders adapt to cultural contexts instead of imposing one model universally.",
+      "Adaptability is key. Great leaders understand cultural nuances and adjust their approach instead of imposing a single model.",
   },
 ];
 
@@ -355,8 +356,7 @@ const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
         </div>
         <div className="mt-2">
           <p className="text-xs text-gray-500">
-            Expectation:{" "}
-            <span className="font-medium">{milestone.expectation}</span>
+            Expectation: <span className="font-medium">{milestone.expectation}</span>
           </p>
         </div>
         <div className="mt-2">
@@ -375,9 +375,7 @@ const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
                 transition={{ duration: 0.3 }}
                 className="mt-2 overflow-hidden"
               >
-                <p className="text-sm text-gray-800">
-                  {milestone.keyTakeaway}
-                </p>
+                <p className="text-sm text-gray-800">{milestone.keyTakeaway}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -430,22 +428,6 @@ const VerticalTimeline = () => {
 export default function LeadershipInsights() {
   // Map location side panel state
   const [selectedCountry, setSelectedCountry] = useState(null);
-
-  // Use useEffect to run Leaflet-specific code only on the client
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const L = require("leaflet");
-      delete L.Icon.Default.prototype._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl:
-          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-        iconUrl:
-          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-        shadowUrl:
-          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-      });
-    }
-  }, []);
 
   return (
     <section className="py-16 bg-gray-50 relative">
@@ -550,9 +532,9 @@ export default function LeadershipInsights() {
       {/* 4️⃣ Leadership Growth Metrics - Radial Progress Indicators */}
       <div className="max-w-4xl mx-auto px-4 mb-16">
         <h3 className="text-2xl font-bold mb-4 text-center">
-          Leadership Growth Metrics
+          {/* Leadership Growth Metrics */}
         </h3>
-        <div className="flex justify-around">
+        {/* <div className="flex justify-around">
           <CircularProgressBar
             before={50}
             after={85}
@@ -566,16 +548,16 @@ export default function LeadershipInsights() {
           <CircularProgressBar
             before={60}
             after={80}
-            label="Communication Skills"
-          />
-        </div>
+            label="Communication Skills" */}
+          {/* /> */}
+        {/* </div> */}
       </div>
 
       {/* 5️⃣ Four Frames Leadership Reflection - Accordion */}
       <FourFramesSection frames={leadershipFrames} />
 
       {/* 6️⃣ Call-to-Action */}
-      <motion.div
+      {/* <motion.div
         className="max-w-4xl mx-auto px-4 text-center"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -595,7 +577,7 @@ export default function LeadershipInsights() {
         >
           Jump to Interactive Map
         </button>
-      </motion.div>
+      </motion.div> */}
     </section>
   );
 }

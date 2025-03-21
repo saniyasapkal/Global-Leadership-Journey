@@ -2,21 +2,11 @@
 
 import { motion } from "framer-motion";
 
-// Smooth scrolling helper
-const scrollToSection = (id) => {
-  const element = document.getElementById(id);
-  if (element) {
-    element.scrollIntoView({ behavior: "smooth" });
-  }
-};
-
-export default function HeroSection() {
+export default function HeroSection({ onBeginJourney }) {
   // Framer Motion variants for container, text, and button
   const containerVariants = {
     hidden: {},
-    visible: {
-      transition: { staggerChildren: 0.3, when: "beforeChildren" },
-    },
+    visible: { transition: { staggerChildren: 0.3, when: "beforeChildren" } },
   };
 
   const textVariants = {
@@ -34,7 +24,7 @@ export default function HeroSection() {
       {/* Background Video */}
       <motion.video
         className="absolute top-0 left-0 w-full h-full object-cover"
-        src="/videos/dynamic-bg.mp4" // Updated path: ensure the file is at public/videos/dynamic-bg.mp4
+        src="/videos/dynamic-bg.mp4" 
         autoPlay
         loop
         muted
@@ -58,14 +48,12 @@ export default function HeroSection() {
         initial="hidden"
         animate="visible"
       >
-        {/* Main Tagline */}
         <motion.h1
           className="text-white text-3xl md:text-5xl font-bold mb-4"
           variants={textVariants}
         >
           From Code to Cultures: My Evolution as a Global Leader
         </motion.h1>
-        {/* Subtitle */}
         <motion.p
           className="text-white text-lg md:text-xl max-w-2xl mb-8"
           variants={textVariants}
@@ -73,12 +61,11 @@ export default function HeroSection() {
         >
           How global experiences shaped my leadership, adaptability, and vision.
         </motion.p>
-        {/* Single CTA Button */}
         <motion.button
           className="bg-blue-600 text-white py-3 px-6 rounded-full font-semibold focus:outline-none"
           variants={buttonVariants}
           whileHover={{ scale: 1.05 }}
-          onClick={() => scrollToSection("journey")}
+          onClick={onBeginJourney}
         >
           Begin My Journey
         </motion.button>

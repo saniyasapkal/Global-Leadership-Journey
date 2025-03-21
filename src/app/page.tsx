@@ -1,35 +1,54 @@
+"use client";
 
-// src/app/page.tsx
-
+import { useState, useRef } from "react";
 import HeroSection from "@/components/HeroSection";
-import InteractiveMap from "@/components/InteractiveMap";
-import Timeline from "@/components/Timeline";
+import PragueSection from "@/components/PragueSection";
+import AustriaSection from "@/components/AustriaSection";
+import NiceSection from "@/components/NiceSection";
+import GlasgowSection from "@/components/GlasgowSection";
 import LeadershipInsights from "@/components/LeadershipInsights";
 import ReflectionSection from "@/components/ReflectionSection";
 
-
 export default function HomePage() {
+  const [showJourney, setShowJourney] = useState(false);
+  const journeyRef = useRef<HTMLDivElement>(null);
+
+  const handleBeginJourney = () => {
+    setShowJourney(true);
+    setTimeout(() => {
+      journeyRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100); // Delay to ensure section is mounted
+  };
+
   return (
-    <main className="flex flex-col items-center justify-center w-full">
-      {/* Hero Section - Engaging Landing View */}
-      <HeroSection />
+    <main className="flex flex-col items-center w-full">
+      {/* 1️⃣ Hero Landing Section */}
+      <HeroSection onBeginJourney={handleBeginJourney} />
 
-      {/* Interactive Leadership Journey - Dual View (Map & Timeline) */}
-      <section id="journey" className="w-full max-w-6xl px-6">
-        
-        <Timeline />
-      </section>
+      {/* 2️⃣ Global Leadership Journey (Dynamic Sections) */}
+      {showJourney && (
+        <section
+          id="journey"
+          ref={journeyRef}
+          className="w-full bg-white overflow-hidden"
+        >
+          <PragueSection />
+          <AustriaSection />
+          <GlasgowSection />
+          <NiceSection />
+          {/* Add more city sections here */}
+        </section>
+      )}
 
-      {/* Key Leadership Insights */}
-      <section id="insights" className="w-full max-w-5xl px-6 my-16">
+      {/* 3️⃣ Cross-Cultural Leadership Insights */}
+      <section id="insights" className="w-full max-w-5xl px-6 my-24">
         <LeadershipInsights />
       </section>
 
-      {/* Personal Reflection & Growth */}
-      <section id="reflection" className="w-full max-w-5xl px-6 my-16">
+      {/* 4️⃣ Final Personal Reflection */}
+      <section id="reflection" className="w-full max-w-5xl px-6 my-24">
         <ReflectionSection />
       </section>
-
     </main>
   );
 }

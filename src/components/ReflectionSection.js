@@ -399,16 +399,16 @@ export default function ReflectionSection() {
       </motion.div>
 
       {/* 1️⃣ Key Takeaways with Inline Expansion */}
-      <InlineExpandingTakeaways />
+      {/* <InlineExpandingTakeaways /> */}
 
       {/* 2️⃣ GDMI Split Stacked Bar Chart for Leadership Growth Metrics */}
       <SplitStackedBarChart />
 
       {/* 3️⃣ Toggle-Based Before vs. After Leadership Insights */}
-      <ToggleInsights />
+      {/* <ToggleInsights /> */}
 
       {/* 4️⃣ Quick Comparison: Flip Cards */}
-      <FlipCardsComparison />
+      {/* <FlipCardsComparison /> */}
     </section>
   );
 }
