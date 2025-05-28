@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
-import { Bar } from "react-chartjs-2";
 import Modal from "react-modal";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -17,6 +17,21 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import FourFramesSection from "@/components/FourFramesSection";
+import GDMISection from "@/components/GDMISection";
+
+// Dynamically import react-leaflet components with SSR disabled
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
 
 // Fix Leaflet default icon paths
 delete L.Icon.Default.prototype._getIconUrl;
@@ -192,7 +207,7 @@ const countryInsights = [
   },
 ];
 
-// Bar chart configuration
+// Bar chart configuration (if needed elsewhere)
 const barData = {
   labels: [
     "Cultural Intelligence",
@@ -269,47 +284,54 @@ const leadershipFrames = [
 // --------------------
 // TIMELINE DATA & COMPONENTS
 // --------------------
-
-// Timeline milestones data
 const timelineData = [
   {
     expectation: "A Leader Must Always Have the Answers.",
-    before: "I believed a strong leader had to know everything and always have the right solution.",
-    after: "I learned that great leadership is about asking the right questions and leveraging diverse expertise.",
+    before:
+      "I believed a strong leader had to know everything and always have the right solution.",
+    after:
+      "I learned that great leadership is about asking the right questions and leveraging diverse expertise.",
     keyTakeaway:
       "Leadership isn’t about having all the answers—it’s about creating an environment where the best answers emerge through collaboration.",
   },
   {
     expectation: "The Best Leaders Make Decisions Quickly and Assertively.",
-    before: "I thought hesitation was a sign of weakness, and decisiveness defined strong leadership.",
-    after: "I realized that effective leadership means knowing when to act fast and when to take time for thoughtful deliberation.",
+    before:
+      "I thought hesitation was a sign of weakness, and decisiveness defined strong leadership.",
+    after:
+      "I realized that effective leadership means knowing when to act fast and when to take time for thoughtful deliberation.",
     keyTakeaway:
       "Speed alone doesn’t define leadership—some cultures value consensus over rapid execution, leading to stronger, more sustainable decisions.",
   },
   {
     expectation: "Leadership is About Authority and Directing Others.",
-    before: "I saw leadership as taking charge, giving instructions, and ensuring efficiency through control.",
-    after: "I discovered that real leadership is about influence, empowerment, and fostering ownership within a team.",
+    before:
+      "I saw leadership as taking charge, giving instructions, and ensuring efficiency through control.",
+    after:
+      "I discovered that real leadership is about influence, empowerment, and fostering ownership within a team.",
     keyTakeaway:
       "The best leaders don’t just manage—they inspire. True leadership is about enabling others to contribute meaningfully and take initiative.",
   },
   {
     expectation: "Strong Leaders Separate Emotion from Decision-Making.",
-    before: "I assumed that emotional detachment made for better leadership, ensuring logical and rational decisions.",
-    after: "I realized that emotional intelligence is just as critical as strategic thinking in building trust and engagement.",
+    before:
+      "I assumed that emotional detachment made for better leadership, ensuring logical and rational decisions.",
+    after:
+      "I realized that emotional intelligence is just as critical as strategic thinking in building trust and engagement.",
     keyTakeaway:
       "Leaders who acknowledge emotions—both their own and others'—make better decisions, strengthen relationships, and create more cohesive teams.",
   },
   {
     expectation: "Good Leadership Looks the Same Everywhere.",
-    before: "I believed strong leadership followed universal principles that worked in any environment.",
-    after: "I learned that leadership is shaped by culture—what works in one place may not resonate elsewhere.",
+    before:
+      "I believed strong leadership followed universal principles that worked in any environment.",
+    after:
+      "I learned that leadership is shaped by culture—what works in one place may not resonate elsewhere.",
     keyTakeaway:
       "Adaptability is key. Great leaders understand cultural nuances and adjust their approach instead of imposing a single model.",
   },
 ];
 
-// MilestoneItem component
 const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
   return (
     <motion.div
@@ -319,7 +341,6 @@ const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      {/* Circular indicator & animated arrow */}
       <div className="absolute left-0 top-0 flex items-center">
         <div className="w-4 h-4 bg-white border-2 border-indigo-600 rounded-full animate-pulse" />
         <motion.div
@@ -328,7 +349,6 @@ const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
         >
-          {/* Simple arrow SVG */}
           <svg
             className="w-4 h-4 text-indigo-600"
             fill="currentColor"
@@ -342,12 +362,11 @@ const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
           </svg>
         </motion.div>
       </div>
-      {/* Milestone content with gradient transition from Before to After */}
       <div className="bg-gradient-to-r from-gray-100 to-blue-100 rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="md:w-1/2 p-2 hover:scale-105 transition-transform">
-            <h4 className="font-bold text-gray-700">Before</h4>
-            <p className="text-sm text-gray-600">{milestone.before}</p>
+            <h4 className="font-bold text-gray-900">Before</h4>
+            <p className="text-sm text-gray-900">{milestone.before}</p>
           </div>
           <div className="md:w-1/2 p-2 hover:scale-105 transition-transform">
             <h4 className="font-bold text-blue-700">After</h4>
@@ -355,7 +374,7 @@ const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
           </div>
         </div>
         <div className="mt-2">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-900">
             Expectation: <span className="font-medium">{milestone.expectation}</span>
           </p>
         </div>
@@ -375,7 +394,7 @@ const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
                 transition={{ duration: 0.3 }}
                 className="mt-2 overflow-hidden"
               >
-                <p className="text-sm text-gray-800">{milestone.keyTakeaway}</p>
+                <p className="text-sm text-gray-900">{milestone.keyTakeaway}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -385,7 +404,6 @@ const MilestoneItem = ({ milestone, isExpanded, onToggle }) => {
   );
 };
 
-// VerticalTimeline component with a progress indicator
 const VerticalTimeline = () => {
   const [expandedIndex, setExpandedIndex] = useState(null);
   const timelineRef = useRef(null);
@@ -401,7 +419,6 @@ const VerticalTimeline = () => {
 
   return (
     <div ref={timelineRef} className="relative">
-      {/* Vertical progress bar */}
       <div className="absolute left-0 top-0 h-full w-2 bg-gray-200">
         <motion.div
           className="h-full bg-indigo-600"
@@ -439,13 +456,11 @@ export default function LeadershipInsights() {
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
           Global Leadership Insights: Lessons in Adaptability & Influence
         </h2>
-        <p className="text-lg text-gray-700">
-          My experiences across different cultures have reshaped my leadership
-          approach, emphasizing adaptability, collaboration, and influence.
-          Explore the key insights that have defined my journey.
+        <p className="text-lg text-gray-900">
+        My experiences across different cultures have reshaped how I lead by strengthening my adaptability, collaboration, and influence. This section highlights the key insights, GDMI metrics, and pivotal moments shifts that shaped my growth.
         </p>
       </motion.div>
 
@@ -475,115 +490,70 @@ export default function LeadershipInsights() {
         <AnimatePresence>
           {selectedCountry && (
             <motion.div
-              className="w-full md:w-1/3 bg-white shadow-lg p-4 md:ml-4 mt-4 md:mt-0 relative"
-              initial={{ x: 300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 300, opacity: 0 }}
-              transition={{ duration: 0.4 }}
+            className="w-full md:w-1/3 bg-white shadow-lg p-4 md:ml-4 mt-4 md:mt-0 relative text-gray-900"
+            initial={{ x: 300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 300, opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+              onClick={() => setSelectedCountry(null)}
             >
-              <button
-                className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-                onClick={() => setSelectedCountry(null)}
-              >
-                X
-              </button>
-              <h3 className="text-xl font-bold mb-2">
-                {selectedCountry.name} Leadership
-              </h3>
-              <div className="space-y-2">
-                <p>
-                  <strong>Overview:</strong> {selectedCountry.overview}
-                </p>
-                <p>
-                  <strong>Position on the Triangle:</strong>{" "}
-                  {selectedCountry.position}
-                </p>
-                <p>
-                  <strong>Leadership Style:</strong>{" "}
-                  {selectedCountry.leadershipStyle}
-                </p>
-                <p>
-                  <strong>Decision-Making:</strong> {selectedCountry.decisionMaking}
-                </p>
-                <p>
-                  <strong>Communication Style:</strong>{" "}
-                  {selectedCountry.communication}
-                </p>
-                <p>
-                  <strong>Risk-Taking:</strong> {selectedCountry.risk}
-                </p>
-                <p>
-                  <strong>Leadership Takeaway:</strong> {selectedCountry.takeaway}
-                </p>
-              </div>
-            </motion.div>
+              X
+            </button>
+            <h3 className="text-xl font-bold mb-2"> 
+              {selectedCountry.name} Leadership
+            </h3>
+            <div className="space-y-2">
+              <p className="text-gray-800">
+                <strong className="text-gray-900">Overview:</strong> {selectedCountry.overview}
+              </p>
+              <p className="text-gray-800">
+                <strong className="text-gray-900">Position on the Triangle:</strong> {selectedCountry.position}
+              </p>
+              <p className="text-gray-800">
+                <strong className="text-gray-900">Leadership Style:</strong> {selectedCountry.leadershipStyle}
+              </p>
+              <p className="text-gray-800">
+                <strong className="text-gray-900">Decision-Making:</strong> {selectedCountry.decisionMaking}
+              </p>
+              <p className="text-gray-800">
+                <strong className="text-gray-900">Communication Style:</strong> {selectedCountry.communication}
+              </p>
+              <p className="text-gray-800">
+                <strong className="text-gray-900">Risk-Taking:</strong> {selectedCountry.risk}
+              </p>
+              <p className="text-gray-800">
+                <strong className="text-gray-900">Leadership Takeaway:</strong> {selectedCountry.takeaway}
+              </p>
+            </div>
+          </motion.div>          
           )}
         </AnimatePresence>
       </div>
 
-      {/* 3️⃣ Before vs. After: Leadership Evolution Timeline */}
+      {/* 3️⃣ Four Frames Leadership Reflection */}
+      <FourFramesSection frames={leadershipFrames} />
+
+      <GDMISection />
+
+
+
+      {/* 5️⃣ Before vs. After: Leadership Evolution Timeline */}
       <div className="max-w-4xl mx-auto px-4 mb-16">
-        <h3 className="text-2xl font-bold mb-4 text-center">
+        <h3 className="text-2xl font-bold mb-4 text-center text-gray-900">
           Before vs. After: Leadership Evolution
         </h3>
         <VerticalTimeline />
       </div>
 
-      {/* 4️⃣ Leadership Growth Metrics - Radial Progress Indicators */}
-      <div className="max-w-4xl mx-auto px-4 mb-16">
-        <h3 className="text-2xl font-bold mb-4 text-center">
-          {/* Leadership Growth Metrics */}
-        </h3>
-        {/* <div className="flex justify-around">
-          <CircularProgressBar
-            before={50}
-            after={85}
-            label="Cultural Intelligence"
-          />
-          <CircularProgressBar
-            before={55}
-            after={90}
-            label="Decision-Making Adaptability"
-          />
-          <CircularProgressBar
-            before={60}
-            after={80}
-            label="Communication Skills" */}
-          {/* /> */}
-        {/* </div> */}
-      </div>
-
-      {/* 5️⃣ Four Frames Leadership Reflection - Accordion */}
-      <FourFramesSection frames={leadershipFrames} />
-
-      {/* 6️⃣ Call-to-Action */}
-      {/* <motion.div
-        className="max-w-4xl mx-auto px-4 text-center"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <p className="text-lg text-gray-700 mb-6">
-          Adaptive leadership is key to thriving in our global landscape.
-          Embrace change, learn from diverse perspectives, and lead with purpose.
-        </p>
-        <button
-          onClick={() => {
-            const mapSection = document.getElementById("journey");
-            mapSection?.scrollIntoView({ behavior: "smooth" });
-          }}
-          className="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition"
-        >
-          Jump to Interactive Map
-        </button>
-      </motion.div> */}
     </section>
   );
 }
 
 // --------------------
-// CircularProgressBar Component
+// CircularProgressBar Component (if needed elsewhere)
 // --------------------
 const CircularProgressBar = ({ before, after, label }) => {
   const radius = 50;
@@ -629,13 +599,13 @@ const CircularProgressBar = ({ before, after, label }) => {
           y="50%"
           dy=".3em"
           textAnchor="middle"
-          className="text-base font-bold fill-current text-gray-800"
+          className="text-base font-bold fill-current text-gray-900"
         >
           {after}%
         </text>
       </svg>
       <div className="mt-2 text-center">
-        <div className="font-semibold">{label}</div>
+        <div className="font-semibold text-gray-900">{label}</div>
         <motion.div
           className="text-sm text-green-600"
           initial={{ opacity: 0 }}

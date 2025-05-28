@@ -52,7 +52,7 @@ export default function HeroSection({ onBeginJourney }) {
           className="text-white text-3xl md:text-5xl font-bold mb-4"
           variants={textVariants}
         >
-          From Code to Cultures: My Evolution as a Global Leader
+          My Evolution as a Global Leader
         </motion.h1>
         <motion.p
           className="text-white text-lg md:text-xl max-w-2xl mb-8"

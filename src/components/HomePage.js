@@ -1,18 +1,33 @@
+// pages/index.js
 "use client";
 
 import { useState, useRef } from "react";
 import HeroSection from "@/components/HeroSection";
-import TimelineSection from "@/components/timeline";
+import PragueSection from "@/components/PragueSection";
+import AustriaSection from "@/components/AustriaSection";
 
 export default function HomePage() {
-  const [showTimeline, setShowTimeline] = useState(false);
-  const journeyRef = useRef(null);
+  // State to control when each section is shown.
+  const [showPrague, setShowPrague] = useState(false);
+  const [showAustria, setShowAustria] = useState(false);
 
+  // Refs for smooth scrolling.
+  const pragueRef = useRef(null);
+  const austriaRef = useRef(null);
+
+  // Trigger when user clicks “Begin My Journey” in HeroSection.
   const handleBeginJourney = () => {
-    setShowTimeline(true);
-    // Wait briefly to ensure the Journey section mounts before scrolling
+    setShowPrague(true);
     setTimeout(() => {
-      journeyRef.current?.scrollIntoView({ behavior: "smooth" });
+      pragueRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
+  // Trigger when user clicks the "scroll down" button in PragueSection.
+  const handleNextSection = () => {
+    setShowAustria(true);
+    setTimeout(() => {
+      austriaRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
@@ -21,16 +36,17 @@ export default function HomePage() {
       {/* HERO SECTION */}
       <HeroSection onBeginJourney={handleBeginJourney} />
 
-      {/* Conditionally render the JOURNEY SECTION */}
-      {showTimeline && (
-        <div ref={journeyRef} id="journey" className="min-h-screen bg-white">
-          <TimelineSection />
-          <div className="p-8">
-            <h2 className="text-3xl font-bold">Interactive Leadership Journey</h2>
-            <p className="mt-4">
-              This is where your full journey content goes. Explore each experience as you scroll.
-            </p>
-          </div>
+      {/* Render the Prague section only after the hero button is clicked */}
+      {showPrague && (
+        <div ref={pragueRef}>
+          <PragueSection onNextSection={handleNextSection} />
+        </div>
+      )}
+
+      {/* Render the Austria section only after the scroll indicator is clicked in Prague */}
+      {showAustria && (
+        <div ref={austriaRef}>
+          <AustriaSection />
         </div>
       )}
     </div>
